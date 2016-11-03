@@ -21,12 +21,10 @@ void Painter::renderClippingMask(const UnwrappedTileID& tileID, const ClipID& cl
         gl::ColorMode::disabled(),
         FillUniforms::values(
            matrixForTile(tileID),
-           0.0f,
-           Color {},
-           Color {},
            context.viewport.getCurrentValue().size
         ),
-        tileTriangleVertexBuffer
+        tileTriangleVertexBuffer,
+        style::FillPaintProperties::Evaluated()
     );
 }
 

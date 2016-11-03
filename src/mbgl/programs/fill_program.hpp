@@ -10,6 +10,7 @@
 #include <mbgl/util/geometry.hpp>
 #include <mbgl/util/mat4.hpp>
 #include <mbgl/util/size.hpp>
+#include <mbgl/style/layers/fill_layer_properties.hpp>
 
 #include <string>
 
@@ -25,7 +26,6 @@ template <class> class Faded;
 
 namespace uniforms {
 MBGL_DEFINE_UNIFORM_SCALAR(Size,     u_world);
-MBGL_DEFINE_UNIFORM_SCALAR(Color,    u_outline_color);
 MBGL_DEFINE_UNIFORM_SCALAR(float,    u_scale_a);
 MBGL_DEFINE_UNIFORM_SCALAR(float,    u_scale_b);
 MBGL_DEFINE_UNIFORM_SCALAR(float,    u_tile_units_to_pixels);
@@ -50,9 +50,6 @@ using FillVertex = FillAttributes::Vertex;
 
 struct FillUniforms : gl::Uniforms<
     uniforms::u_matrix,
-    uniforms::u_opacity,
-    uniforms::u_color,
-    uniforms::u_outline_color,
     uniforms::u_world>
 {};
 
@@ -84,13 +81,16 @@ struct FillPatternUniforms : gl::Uniforms<
                          const TransformState&);
 };
 
-class FillProgram : public Program<
+class FillProgram : public PaintProgram<
     shaders::fill,
     gl::Triangle,
     FillAttributes,
-    FillUniforms>
+    FillUniforms,
+    style::PaintProperties<
+        style::FillColor,
+        style::FillOpacity>>
 {
-    using Program::Program;
+    using PaintProgram::PaintProgram;
 };
 
 class FillPatternProgram : public Program<
@@ -102,13 +102,16 @@ class FillPatternProgram : public Program<
     using Program::Program;
 };
 
-class FillOutlineProgram : public Program<
+class FillOutlineProgram : public PaintProgram<
     shaders::fill_outline,
     gl::Line,
     FillAttributes,
-    FillUniforms>
+    FillUniforms,
+    style::PaintProperties<
+        style::FillOutlineColor,
+        style::FillOpacity>>
 {
-    using Program::Program;
+    using PaintProgram::PaintProgram;
 };
 
 class FillOutlinePatternProgram : public Program<

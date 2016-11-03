@@ -3,6 +3,7 @@
 #include <mbgl/gl/types.hpp>
 #include <mbgl/util/ignore.hpp>
 #include <mbgl/util/indexed_tuple.hpp>
+#include <mbgl/util/variant.hpp>
 
 #include <cstddef>
 #include <functional>
@@ -10,17 +11,45 @@
 namespace mbgl {
 namespace gl {
 
+template <class T, std::size_t N>
+class VariableAttributeValue {
+public:
+    std::size_t vertexSize;
+    std::size_t attributeOffset;
+
+    void bind(AttributeLocation, std::size_t vertexOffset) const;
+};
+
+template <class T, std::size_t N>
+class ConstantAttributeValue {
+public:
+    T value[N];
+
+    void bind(AttributeLocation, std::size_t) const;
+};
+
 template <class Tag, class T, std::size_t N>
 class Attribute {
 public:
     using Type = T[N];
 
+    using VariableValue = VariableAttributeValue<T, N>;
+    using ConstantValue = ConstantAttributeValue<T, N>;
+
+    using Value = variant<
+        VariableValue,
+        ConstantValue>;
+
     class State {
     public:
         AttributeLocation location;
-        static constexpr std::size_t count = N;
-        static constexpr DataType type = DataTypeOf<T>::value;
     };
+
+    static void bind(const State& state, const Value& value_, std::size_t vertexOffset) {
+        Value::visit(value_, [&] (const auto& value) {
+            value.bind(state.location, vertexOffset);
+        });
+    }
 };
 
 #define MBGL_DEFINE_ATTRIBUTE(type_, n_, name_) \
@@ -37,6 +66,12 @@ namespace detail {
 
 template <class... As>
 class Vertex;
+
+template <>
+class Vertex<> {
+public:
+    using VertexType = Vertex<>;
+};
 
 template <class A1>
 class Vertex<A1> {
@@ -132,17 +167,12 @@ const std::size_t Vertex<A1, A2, A3, A4, A5>::attributeOffsets[5] = {
 
 AttributeLocation attributeLocation(ProgramID, const char * name);
 
-void bindAttribute(AttributeLocation location,
-                   std::size_t count,
-                   DataType type,
-                   std::size_t vertexSize,
-                   std::size_t vertexOffset,
-                   std::size_t attributeOffset);
-
 template <class... As>
 class Attributes {
 public:
     using State = IndexedTuple<TypeList<As...>, TypeList<typename As::State...>>;
+    using Values = IndexedTuple<TypeList<As...>, TypeList<typename As::Value...>>;
+
     using Vertex = detail::Vertex<As...>;
 
     template <class A>
@@ -152,14 +182,20 @@ public:
         return State { { attributeLocation(id, As::name) }... };
     }
 
-    static std::function<void (std::size_t)> binder(const State& state) {
-        return [&state] (std::size_t vertexOffset) {
-            util::ignore({ (bindAttribute(state.template get<As>().location,
-                                          state.template get<As>().count,
-                                          state.template get<As>().type,
-                                          sizeof(Vertex),
-                                          vertexOffset,
-                                          Vertex::attributeOffsets[Index<As>]), 0)... });
+    static Values allVariableValues() {
+        return Values {
+            typename As::VariableValue {
+                sizeof(Vertex),
+                Vertex::attributeOffsets[Index<As>]
+            }...
+        };
+    }
+
+    static std::function<void (std::size_t)> binder(const State& state, Values&& values_ = allVariableValues()) {
+        return [&state, values = std::move(values_)] (std::size_t vertexOffset) {
+            util::ignore({ (As::bind(state.template get<As>(),
+                                     values.template get<As>(),
+                                     vertexOffset), 0)... });
         };
     }
 };

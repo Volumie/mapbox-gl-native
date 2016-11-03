@@ -58,8 +58,7 @@ LineProgram::uniformValues(const LinePaintProperties::Evaluated& properties,
         properties,
         pixelRatio,
         tile,
-        state,
-        properties.get<LineColor>()
+        state
     );
 }
 
@@ -90,7 +89,6 @@ LineSDFProgram::uniformValues(const LinePaintProperties::Evaluated& properties,
         pixelRatio,
         tile,
         state,
-        properties.get<LineColor>(),
         scaleA,
         scaleB,
         posA.y,

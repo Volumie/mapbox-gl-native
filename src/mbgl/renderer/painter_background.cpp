@@ -57,12 +57,10 @@ void Painter::renderBackground(PaintParameters& parameters, const BackgroundLaye
                 colorModeForRenderPass(),
                 FillUniforms::values(
                     matrixForTile(tileID),
-                    properties.get<BackgroundOpacity>(),
-                    properties.get<BackgroundColor>(),
-                    properties.get<BackgroundColor>(),
                     context.viewport.getCurrentValue().size
                 ),
-                tileTriangleVertexBuffer
+                tileTriangleVertexBuffer,
+                properties
             );
         }
     }

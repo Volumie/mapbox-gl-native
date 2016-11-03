@@ -5,32 +5,33 @@
 #include <mbgl/programs/uniforms.hpp>
 #include <mbgl/shader/circle.hpp>
 #include <mbgl/util/geometry.hpp>
+#include <mbgl/style/layers/circle_layer_properties.hpp>
 
 namespace mbgl {
 
 namespace uniforms {
-MBGL_DEFINE_UNIFORM_SCALAR(float, u_radius);
 MBGL_DEFINE_UNIFORM_SCALAR(bool, u_scale_with_map);
 MBGL_DEFINE_UNIFORM_SCALAR(float, u_devicepixelratio);
 } // namespace uniforms
 
-class CircleProgram : public Program<
+class CircleProgram : public PaintProgram<
     shaders::circle,
     gl::Triangle,
     gl::Attributes<
         attributes::a_pos>,
     gl::Uniforms<
         uniforms::u_matrix,
-        uniforms::u_opacity,
-        uniforms::u_color,
-        uniforms::u_radius,
-        uniforms::u_blur,
         uniforms::u_scale_with_map,
         uniforms::u_extrude_scale,
-        uniforms::u_devicepixelratio>>
+        uniforms::u_devicepixelratio>,
+    style::PaintProperties<
+        style::CircleColor,
+        style::CircleOpacity,
+        style::CircleRadius,
+        style::CircleBlur>>
 {
 public:
-    using Program::Program;
+    using PaintProgram::PaintProgram;
 
     /*
      * @param {number} x vertex position

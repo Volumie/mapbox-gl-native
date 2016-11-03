@@ -82,7 +82,7 @@ public:
         });
     }
 
-private:
+protected:
     UniqueShader vertexShader;
     UniqueShader fragmentShader;
     UniqueProgram program;

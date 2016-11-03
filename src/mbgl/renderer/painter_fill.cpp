@@ -85,7 +85,6 @@ void Painter::renderFill(PaintParameters& parameters,
     } else {
         auto draw = [&] (uint8_t sublayer,
                          auto& program,
-                         Color outlineColor,
                          const auto& drawMode,
                          const auto& vertexBuffer,
                          const auto& indexBuffer,
@@ -100,21 +99,18 @@ void Painter::renderFill(PaintParameters& parameters,
                     tile.translatedMatrix(properties.get<FillTranslate>(),
                                           properties.get<FillTranslateAnchor>(),
                                           state),
-                    properties.get<FillOpacity>(),
-                    properties.get<FillColor>(),
-                    outlineColor,
                     context.viewport.getCurrentValue().size
                 ),
                 vertexBuffer,
                 indexBuffer,
-                segments
+                segments,
+                properties
             );
         };
 
         if (properties.get<FillAntialias>() && !layer.impl->paint.unevaluated.get<FillOutlineColor>().isUndefined() && pass == RenderPass::Translucent) {
             draw(2,
                  parameters.programs.fillOutline,
-                 properties.get<FillOutlineColor>(),
                  gl::Lines { 2.0f },
                  *bucket.vertexBuffer,
                  *bucket.lineIndexBuffer,
@@ -126,7 +122,6 @@ void Painter::renderFill(PaintParameters& parameters,
         if ((properties.get<FillColor>().a >= 1.0f && properties.get<FillOpacity>() >= 1.0f) == (pass == RenderPass::Opaque)) {
             draw(1,
                  parameters.programs.fill,
-                 properties.get<FillOutlineColor>(),
                  gl::Triangles(),
                  *bucket.vertexBuffer,
                  *bucket.triangleIndexBuffer,
@@ -136,7 +131,6 @@ void Painter::renderFill(PaintParameters& parameters,
         if (properties.get<FillAntialias>() && layer.impl->paint.unevaluated.get<FillOutlineColor>().isUndefined() && pass == RenderPass::Translucent) {
             draw(2,
                  parameters.programs.fillOutline,
-                 properties.get<FillColor>(),
                  gl::Lines { 2.0f },
                  *bucket.vertexBuffer,
                  *bucket.lineIndexBuffer,

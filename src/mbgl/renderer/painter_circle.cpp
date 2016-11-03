@@ -34,10 +34,6 @@ void Painter::renderCircle(PaintParameters& parameters,
             tile.translatedMatrix(properties.get<CircleTranslate>(),
                                   properties.get<CircleTranslateAnchor>(),
                                   state),
-            properties.get<CircleOpacity>(),
-            properties.get<CircleColor>(),
-            properties.get<CircleRadius>(),
-            properties.get<CircleBlur>(),
             properties.get<CirclePitchScale>() == CirclePitchScaleType::Map,
             properties.get<CirclePitchScale>() == CirclePitchScaleType::Map
                 ? std::array<float, 2> {{
@@ -49,7 +45,8 @@ void Painter::renderCircle(PaintParameters& parameters,
         ),
         *bucket.vertexBuffer,
         *bucket.indexBuffer,
-        bucket.segments
+        bucket.segments,
+        properties
     );
 }
 

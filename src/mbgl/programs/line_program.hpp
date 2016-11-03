@@ -6,8 +6,8 @@
 #include <mbgl/shader/line.hpp>
 #include <mbgl/shader/line_pattern.hpp>
 #include <mbgl/shader/line_sdf.hpp>
-#include <mbgl/style/layers/line_layer_properties.hpp>
 #include <mbgl/util/geometry.hpp>
+#include <mbgl/style/layers/line_layer_properties.hpp>
 
 #include <cmath>
 
@@ -83,7 +83,7 @@ struct LineAttributes : gl::Attributes<
 
 using LineVertex = LineAttributes::Vertex;
 
-class LineProgram : public Program<
+class LineProgram : public PaintProgram<
     shaders::line,
     gl::Triangle,
     LineAttributes,
@@ -97,11 +97,12 @@ class LineProgram : public Program<
         uniforms::u_antialiasing,
         uniforms::u_antialiasingmatrix,
         uniforms::u_ratio,
-        uniforms::u_extra,
-        uniforms::u_color>>
+        uniforms::u_extra>,
+    style::PaintProperties<
+        style::LineColor>>
 {
 public:
-    using Program::Program;
+    using PaintProgram::PaintProgram;
 
     static UniformValues uniformValues(const style::LinePaintProperties::Evaluated&,
                                        float pixelRatio,
@@ -109,7 +110,7 @@ public:
                                        const TransformState&);
 };
 
-class LinePatternProgram : public Program<
+class LinePatternProgram : public PaintProgram<
     shaders::line_pattern,
     gl::Triangle,
     LineAttributes,
@@ -131,10 +132,11 @@ class LinePatternProgram : public Program<
         uniforms::u_pattern_size_a,
         uniforms::u_pattern_size_b,
         uniforms::u_fade,
-        uniforms::u_image>>
+        uniforms::u_image>,
+    style::PaintProperties<>>
 {
 public:
-    using Program::Program;
+    using PaintProgram::PaintProgram;
 
     static UniformValues uniformValues(const style::LinePaintProperties::Evaluated&,
                                        float pixelRatio,
@@ -144,7 +146,7 @@ public:
                                        const SpriteAtlasPosition& posB);
 };
 
-class LineSDFProgram : public Program<
+class LineSDFProgram : public PaintProgram<
     shaders::line_sdf,
     gl::Triangle,
     LineAttributes,
@@ -159,17 +161,18 @@ class LineSDFProgram : public Program<
         uniforms::u_antialiasingmatrix,
         uniforms::u_ratio,
         uniforms::u_extra,
-        uniforms::u_color,
         uniforms::u_patternscale_a,
         uniforms::u_patternscale_b,
         uniforms::u_tex_y_a,
         uniforms::u_tex_y_b,
         uniforms::u_mix,
         uniforms::u_sdfgamma,
-        uniforms::u_image>>
+        uniforms::u_image>,
+    style::PaintProperties<
+        style::LineColor>>
 {
 public:
-    using Program::Program;
+    using PaintProgram::PaintProgram;
 
     static UniformValues uniformValues(const style::LinePaintProperties::Evaluated&,
                                        float pixelRatio,
